@@ -1,0 +1,23 @@
+@use "../../../styles/variables" as *;
+
+.input {
+  width: 100%;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: 0.85rem 1rem;
+  background: white;
+  color: $color-text;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input::placeholder {
+  color: $color-text-muted;
+}
+
+.input:focus {
+  border-color: $color-primary;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
