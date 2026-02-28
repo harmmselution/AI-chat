@@ -23,12 +23,7 @@ export const App = () => {
   return (
     <main className={styles.page}>
       <section className={styles.card}>
-        <header className={styles.header}>
           <h1 className={styles.title}>AI Assistant</h1>
-          <p className={styles.subtitle}>
-            React + TypeScript + SCSS Modules
-          </p>
-        </header>
 
         <ChatDisplay messages={messages} loading={loading} />
 

@@ -1,8 +1,6 @@
 import type { ComponentPropsWithRef } from "react";
-import classNames from "classnames/bind";
+import classNames from "classnames";
 import styles from "./Button.module.scss";
-
-const cx = classNames.bind(styles);
 
 type ButtonProps = ComponentPropsWithRef<"button"> & {
   variant?: "primary" | "secondary";
@@ -17,9 +15,8 @@ export const Button = ({
   return (
     <button
       ref={ref}
-      className={cx("button", variant, className)}
+      className={classNames(styles.button, styles[variant], className)}
       {...props}
     />
   );
 };
-

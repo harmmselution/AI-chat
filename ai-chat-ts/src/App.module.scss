@@ -20,23 +20,11 @@
   padding: 1.5rem;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
 .title {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
   color: $color-text;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 0.95rem;
-  color: $color-text-muted;
 }
 
 .form {

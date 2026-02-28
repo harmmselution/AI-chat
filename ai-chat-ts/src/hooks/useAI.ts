@@ -1,48 +1,10 @@
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import type { ChatMessage } from "../types/chat";
+import type { HFStreamChunk } from "../types/api";
 import { getErrorMessage, type AppError } from "../utils/error";
-
-const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
-const DEFAULT_MODEL = "meta-llama/Llama-3.2-3B-Instruct";
-
-interface HFResponse {
-  choices?: {
-    message?: {
-      content?: string;
-    };
-  }[];
-  error?: string;
-}
-
-interface HFStreamChunk {
-  choices?: Array<{
-    delta?: {
-      role?: "assistant";
-      content?: string;
-    };
-    finish_reason?: string | null;
-  }>;
-  error?: string;
-}
-
-const createMessage = (
-  role: "user" | "assistant",
-  content: string
-): ChatMessage => ({
-  id: crypto.randomUUID(),
-  role,
-  content,
-});
-
-const getResponseErrorMessage = async (response: Response): Promise<string> => {
-  try {
-    const data = (await response.json()) as HFResponse;
-    return data.error || `Request failed with status ${response.status}`;
-  } catch {
-    return `Request failed with status ${response.status}`;
-  }
-};
+import { createMessage, getResponseErrorMessage } from "../utils/chat";
+import { DEFAULT_MODEL, HF_CHAT_URL } from "../config";
 
 export const useAI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -169,7 +131,6 @@ export const useAI = () => {
     }
   };
   
-
   return {
     messages,
     sendMessage,

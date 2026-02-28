@@ -1,25 +1,28 @@
 export interface AppError {
-    message: string;
-    status?: number;
+  message: string;
+  status?: number;
+}
+
+const FALLBACK_MESSAGE = "Something went wrong. Please try again.";
+
+const isAppError = (error: unknown): error is AppError =>
+  typeof error === "object" &&
+  error !== null &&
+  "message" in error &&
+  typeof (error as { message: unknown }).message === "string" &&
+  (!("status" in error) ||
+    typeof (error as { status?: unknown }).status === "number");
+
+export const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
   }
-  
-  const hasMessage = (error: unknown): error is { message: string } => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "message" in error &&
-      typeof (error as { message: unknown }).message === "string"
-    );
-  };
-  
-  export const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-      return error.message;
-    }
-  
-    if (hasMessage(error)) {
-      return error.message;
-    }
-  
-    return "Something went wrong. Please try again.";
-  };
+
+  if (isAppError(error)) {
+    return error.status != null
+      ? `${error.message} (HTTP ${error.status})`
+      : error.message;
+  }
+
+  return FALLBACK_MESSAGE;
+};
