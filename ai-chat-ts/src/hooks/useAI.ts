@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import type { ChatMessage } from "../types/chat";
 import { getErrorMessage, type AppError } from "../utils/error";
@@ -15,6 +15,17 @@ interface HFResponse {
   error?: string;
 }
 
+interface HFStreamChunk {
+  choices?: Array<{
+    delta?: {
+      role?: "assistant";
+      content?: string;
+    };
+    finish_reason?: string | null;
+  }>;
+  error?: string;
+}
+
 const createMessage = (
   role: "user" | "assistant",
   content: string
@@ -24,20 +35,47 @@ const createMessage = (
   content,
 });
 
+const getResponseErrorMessage = async (response: Response): Promise<string> => {
+  try {
+    const data = (await response.json()) as HFResponse;
+    return data.error || `Request failed with status ${response.status}`;
+  } catch {
+    return `Request failed with status ${response.status}`;
+  }
+};
+
 export const useAI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return;
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-    const updatedMessages: ChatMessage[] = [
-      ...messages,
-      createMessage("user", content),
-    ];
+  const stopStreaming = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setLoading(false);
+  };
+
+  const clearMessages = () => {
+    stopStreaming();
+    setMessages([]);
+  };
+
+  const sendMessage = async (content: string) => {
+    const trimmedContent = content.trim();
+
+    if (!trimmedContent || loading) return;
+
+    const userMessage = createMessage("user", trimmedContent);
+    const assistantMessage = createMessage("assistant", "");
+
+    const updatedMessages = [...messages, userMessage, assistantMessage];
 
     setMessages(updatedMessages);
     setLoading(true);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const response = await fetch(HF_CHAT_URL, {
@@ -48,36 +86,95 @@ export const useAI = () => {
         },
         body: JSON.stringify({
           model: DEFAULT_MODEL,
-          messages: updatedMessages.map(({ role, content }) => ({
-            role,
-            content,
-          })),
+          stream: true,
+          messages: updatedMessages
+            .filter((message) => message.id !== assistantMessage.id)
+            .map(({ role, content }) => ({
+              role,
+              content,
+            })),
         }),
+        signal: controller.signal,
       });
-
-      const data: HFResponse = await response.json();
 
       if (!response.ok) {
         const apiError: AppError = {
-          message: data.error || "Failed to get AI response.",
+          message: await getResponseErrorMessage(response),
           status: response.status,
         };
 
         throw apiError;
       }
 
-      const aiMessage = createMessage(
-        "assistant",
-        data.choices?.[0]?.message?.content ?? "No response"
-      );
+      if (!response.body) {
+        throw new Error("Streaming response body is missing.");
+      }
 
-      setMessages([...updatedMessages, aiMessage]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+
+        for (const event of events) {
+          const lines = event
+            .split("\n")
+            .filter((line) => line.startsWith("data:"))
+            .map((line) => line.replace(/^data:\s?/, "").trim())
+            .filter(Boolean);
+
+          for (const line of lines) {
+            if (line === "[DONE]") {
+              continue;
+            }
+
+            const chunk = JSON.parse(line) as HFStreamChunk;
+            const delta = chunk.choices?.[0]?.delta?.content;
+
+            if (!delta) continue;
+
+            setMessages((currentMessages) =>
+              currentMessages.map((message) =>
+                message.id === assistantMessage.id
+                  ? { ...message, content: message.content + delta }
+                  : message
+              )
+            );
+          }
+        }
+      }
     } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       toast.error(getErrorMessage(error));
+
+      setMessages((currentMessages) =>
+        currentMessages.filter((message) => message.id !== assistantMessage.id)
+      );
+  
     } finally {
+      abortControllerRef.current = null;
       setLoading(false);
     }
   };
+  
 
-  return { messages, sendMessage, loading };
+  return {
+    messages,
+    sendMessage,
+    loading,
+    stopStreaming,
+    clearMessages,
+  };
 };
