@@ -1,7 +1,7 @@
 import type { ChatMessage, Role } from "../types/chat";
 import type { HFResponse } from "../types/api";
 
-export const createMessage = (
+ const createMessage = (
   role: Role,
   content: string
 ): ChatMessage => ({
@@ -10,7 +10,7 @@ export const createMessage = (
   content,
 });
 
-export const getResponseErrorMessage = async (
+ const getResponseErrorMessage = async (
   response: Response
 ): Promise<string> => {
   try {
@@ -20,3 +20,5 @@ export const getResponseErrorMessage = async (
     return `Request failed with status ${response.status}`;
   }
 };
+
+export {createMessage, getResponseErrorMessage}

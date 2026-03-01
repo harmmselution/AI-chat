@@ -13,7 +13,7 @@ const isAppError = (error: unknown): error is AppError =>
   (!("status" in error) ||
     typeof (error as { status?: unknown }).status === "number");
 
-export const getErrorMessage = (error: unknown): string => {
+ const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }
@@ -26,3 +26,5 @@ export const getErrorMessage = (error: unknown): string => {
 
   return FALLBACK_MESSAGE;
 };
+
+export {getErrorMessage}

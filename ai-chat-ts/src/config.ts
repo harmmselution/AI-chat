@@ -1,3 +1,5 @@
-export const HF_CHAT_URL =
+ const HF_CHAT_URL =
   "https://router.huggingface.co/v1/chat/completions";
-export const DEFAULT_MODEL = "meta-llama/Llama-3.2-3B-Instruct";
+ const DEFAULT_MODEL = "meta-llama/Llama-3.2-3B-Instruct";
+
+export {HF_CHAT_URL, DEFAULT_MODEL}

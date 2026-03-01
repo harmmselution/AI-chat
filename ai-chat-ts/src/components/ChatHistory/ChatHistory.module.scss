@@ -1,0 +1,165 @@
+@use "../../styles/variables" as *;
+
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid $color-border;
+  background: $color-surface-alt;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $color-text-muted;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background: $color-border;
+    color: $color-text;
+  }
+}
+
+.clearButton {
+  padding: 0.4rem 0.65rem;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $color-text-muted;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background: $color-border;
+    color: $color-text;
+  }
+}
+
+.list {
+  margin: 0;
+  padding: 0.75rem;
+  list-style: none;
+  overflow-y: auto;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  padding: 0.65rem 0.85rem;
+  border-radius: $radius-md;
+  background: $color-surface-alt;
+  border: 1px solid $color-border;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.threadItem {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: none;
+  border-radius: $radius-md;
+  background: $color-surface-alt;
+  border: 1px solid $color-border;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    background: $color-primary-light;
+    border-color: $color-primary;
+  }
+
+  &[data-active] {
+    background: $color-primary-light;
+    border-color: $color-primary;
+  }
+}
+
+.threadTitle {
+  font-size: 0.875rem;
+  color: $color-text;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.threadDate {
+  font-size: 0.75rem;
+  color: $color-text-muted;
+}
+
+.role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  &[data-role="user"] {
+    color: $color-primary;
+  }
+
+  &[data-role="assistant"] {
+    color: $color-text-muted;
+  }
+}
+
+.preview {
+  font-size: 0.875rem;
+  color: $color-text;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: $color-text-muted;
+}

@@ -5,3 +5,9 @@ export interface ChatMessage {
   role: Role;
   content: string;
 }
+
+export interface ChatThread {
+  id: string;
+  messages: ChatMessage[];
+  createdAt: number;
+}

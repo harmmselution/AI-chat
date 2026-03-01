@@ -5,10 +5,21 @@ import type { HFStreamChunk } from "../types/api";
 import { getErrorMessage, type AppError } from "../utils/error";
 import { createMessage, getResponseErrorMessage } from "../utils/chat";
 import { DEFAULT_MODEL, HF_CHAT_URL } from "../config";
+import {
+  loadChatHistory,
+  saveChatHistory,
+  clearCurrentThread,
+  clearAllHistory as clearAllStorage,
+  getThreads,
+  loadThread,
+  getActiveThreadId,
+} from "../utils/chatStorage";
 
 export const useAI = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(loadChatHistory);
   const [loading, setLoading] = useState(false);
+  const [threads, setThreads] = useState(getThreads);
+  const [activeThreadId, setActiveThreadId] = useState(getActiveThreadId);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -20,8 +31,27 @@ export const useAI = () => {
 
   const clearMessages = () => {
     stopStreaming();
+    const nextId = clearCurrentThread();
+    setActiveThreadId(nextId);
     setMessages([]);
+    setThreads(getThreads());
   };
+
+  const switchToThread = (threadId: string) => {
+    stopStreaming();
+    setMessages(loadThread(threadId));
+    setActiveThreadId(threadId);
+    setThreads(getThreads());
+  };
+
+  const clearAllHistory = () => {
+    stopStreaming();
+    clearAllStorage();
+    setMessages(loadChatHistory());
+    setThreads(getThreads());
+    setActiveThreadId(getActiveThreadId());
+  };
+
 
   const sendMessage = async (content: string) => {
     const trimmedContent = content.trim();
@@ -34,6 +64,7 @@ export const useAI = () => {
     const updatedMessages = [...messages, userMessage, assistantMessage];
 
     setMessages(updatedMessages);
+    saveChatHistory(updatedMessages);
     setLoading(true);
 
     const controller = new AbortController();
@@ -104,16 +135,19 @@ export const useAI = () => {
 
             if (!delta) continue;
 
-            setMessages((currentMessages) =>
-              currentMessages.map((message) =>
+            setMessages((currentMessages) => {
+              const next = currentMessages.map((message) =>
                 message.id === assistantMessage.id
                   ? { ...message, content: message.content + delta }
                   : message
-              )
-            );
+              );
+              saveChatHistory(next);
+              return next;
+            });
           }
         }
       }
+      setThreads(getThreads());
     } catch (error: unknown) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
@@ -121,10 +155,14 @@ export const useAI = () => {
 
       toast.error(getErrorMessage(error));
 
-      setMessages((currentMessages) =>
-        currentMessages.filter((message) => message.id !== assistantMessage.id)
-      );
-  
+      setMessages((currentMessages) => {
+        const next = currentMessages.filter(
+          (message) => message.id !== assistantMessage.id
+        );
+        saveChatHistory(next);
+        return next;
+      });
+      setThreads(getThreads());
     } finally {
       abortControllerRef.current = null;
       setLoading(false);
@@ -137,5 +175,9 @@ export const useAI = () => {
     loading,
     stopStreaming,
     clearMessages,
+    threads,
+    activeThreadId,
+    switchToThread,
+    clearAllHistory,
   };
 };
