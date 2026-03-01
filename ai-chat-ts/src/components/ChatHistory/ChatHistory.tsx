@@ -1,6 +1,7 @@
 import type { ChatThread } from "../../types/chat";
 import { formatDate } from "../../utils/formatDate";
 import { getThreadTitle } from "../../utils/getThreadTitle";
+import { Button } from "../Button/Button";
 import styles from "./ChatHistory.module.scss";
 
 interface ChatHistoryProps {
@@ -21,14 +22,14 @@ export const ChatHistory = ({
       <div className={styles.header}>
         <h2 className={styles.title}>History</h2>
         {onClearHistory && (
-          <button
+          <Button
             type="button"
             className={styles.clearButton}
             onClick={onClearHistory}
             aria-label="Clear all history"
           >
             Clear history
-          </button>
+          </Button>
         )}
       </div>
       <ul className={styles.list}>

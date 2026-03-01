@@ -28,30 +28,6 @@
   color: $color-text;
 }
 
-.closeButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  border-radius: $radius-md;
-  background: transparent;
-  color: $color-text-muted;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-
-  &:hover {
-    background: $color-border;
-    color: $color-text;
-  }
-}
-
 .clearButton {
   padding: 0.4rem 0.65rem;
   border: none;
@@ -67,7 +43,7 @@
 
   &:hover {
     background: $color-border;
-    color: $color-text;
+    color: $color-surface;
   }
 }
 
